@@ -38,7 +38,6 @@ def spiCom(module, data, device):
 
 
 
-
 #Variables
 tmp = 5
 wL = 5
@@ -63,7 +62,6 @@ strData = ["5","5","5","5","5","5","5","5","5"];
 
 
 while 1:
-
     #Sending Power Module request
     msg = [pwr_stat]
     msg.append(btry_lvl)
@@ -85,6 +83,9 @@ while 1:
     inData[1] = int(result0[1])  #Get water level
     inData[2] = int(result1[0])  #Get power status
     inData[3] = int(result1[1])  #Get battery level
+    strData[0] = str(inData[0])
+    strData[1] = str(inData[1])
+    strData[3] = str(result0[3])
 
     #Set output signals and variables if battery is enabled
     if inData[2] == 43:  #Battery is on
@@ -111,7 +112,9 @@ while 1:
         elif inData[0] >= 78 and inData[0] < 100:  #Check for good temp
             outData[0] = 89  #turn off heater
         else:
-            outData[0] = 6  #temperature error
+            outData[0] = 89  #temperature error
+            strData[0] = "Error tmp"
+
 
         if inData[1] == 68:  #Water level is too low!
             outData[1] = 78  #Turn on water filler
@@ -123,19 +126,35 @@ while 1:
             outData[1] = 6  #water level error
             strData[1] = "Error WL"
     else:
-        outData[0] = outData[1] = outData[2] = 6  #power status error
+        outData[2] = 42  #System flag: emergency shutoff
+        outData[0] = 89  #Heater flag: off
+        outData[1] = 77  #Filler flag: off
+
+
+        strData[5] = str(inData[3])+"%"
         strData[4] = strData[5] = "Error PS"
+        strData[6] = "Heater off"
+        strData[7] = "Filler off"
+        strData[8] = "System Shutoff"
 
 
     tmp = inData[0]
     wL = inData[1]
     amm = int(result0[2])
-    pH = int(result0[3])
+   # pH = int(result0[3])
     pwr_stat = inData[2]
     btry_lvl = inData[3]
     filler_flag = outData[1]
     heater_flag = outData[0]
     FnH_flag = outData[2]
+
+
+    if wL == 68:  #Water level is too low
+        strData[1] = "Low"
+    elif wL == 58:  #Water level is good, turn off the water filler
+        strData[1] = "High"
+    else:
+        strData[1] = "Error WL"
 
     if amm == 11:
         strData[2] = "alarm"
@@ -169,9 +188,6 @@ while 1:
     else:
         strData[8] = "Error Sys"
 
-    strData[0] = str(tmp)
-    strData[3] = str(pH)
-
     database.save_data(strData[0],strData[1],strData[2],strData[3],strData[4],strData[5])
     serverRefresh.refresh()
 
@@ -185,5 +201,3 @@ while 1:
     print(f"filler flag=",strData[7], ": ", filler_flag)
     print(f"tmp_wL flag=",strData[8],": ", FnH_flag)
     sleep(5)
-
-
