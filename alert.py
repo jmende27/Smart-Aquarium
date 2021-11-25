@@ -7,7 +7,7 @@ import csv
 delay = 3
 timeStamp = []
 tempList = []
-userEmail = 'judithmendez1995@gmail.com'
+userEmail = 'userEmail@gmail.com'
 userNum= '+1##########'
 
 def send_email():
@@ -31,7 +31,7 @@ def send_sms():
 
     message = client.messages.create(
         body='!!!The backup-battery in your Smart-Aquarium has been enabled!!!',
-        from_='+13606383914',
+        from_='+1360638####',
         to= userNum
         )
 
